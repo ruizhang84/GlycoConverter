@@ -21,6 +21,8 @@ namespace mzMLWriter.Content
     {
         [XmlAttribute]
         public string count { get; set; }
+        [XmlElement]
+        public BinaryDataArray[] binaryDataArray { get; set; }
     }
     public class IsolationWindow
     {
@@ -48,11 +50,17 @@ namespace mzMLWriter.Content
     {
         [XmlAttribute]
         public string spectrumRef { get; set; }
+        [XmlElement]
+        public SelectedIonList selectedIonList { get; set; }
+        [XmlElement]
+        public Activation activation { get; set; }
     }
     public class PrecursorList
     {
         [XmlAttribute]
         public string count { get; set; }
+        [XmlElement]
+        public Precursor[] precursor { get; set; }
     }
 
     public class Spectrum

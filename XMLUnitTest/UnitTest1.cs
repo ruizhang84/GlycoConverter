@@ -50,14 +50,14 @@ namespace Tests
             model.fileDescription.fileContent.cvParam[0] = new CVParam
             {
                 cvRef = "MS",
-                acession = "MS:1000580",
+                accession = "MS:1000580",
                 name = "MSn spectrum",
                 value = ""
             };
             model.fileDescription.fileContent.cvParam[1] = new CVParam
             {
                 cvRef = "MS",
-                acession = "MS:1000127",
+                accession = "MS:1000127",
                 name = "centroid spectrum",
                 value = ""
             };
@@ -76,14 +76,14 @@ namespace Tests
             model.fileDescription.contact.cvParam[0] = new CVParam
             {
                 cvRef = "MS",
-                acession = "MS:1000586",
+                accession = "MS:1000586",
                 name = "contact name",
                 value = "Rui Zhang"
             };
             model.fileDescription.contact.cvParam[1] = new CVParam
             {
                 cvRef = "MS",
-                acession = "MS:1000589",
+                accession = "MS:1000589",
                 name = "contact email",
                 value = "rz20@iu.edu"
             };
@@ -123,14 +123,14 @@ namespace Tests
             model.dataProcessingList.dataProcessing[0].processingMethod[0].cvParam[0] = new CVParam()
             {
                 cvRef = "MS",
-                acession = "MS:1000035",
+                accession = "MS:1000035",
                 name = "peak picking",
                 value = ""
             };
             model.dataProcessingList.dataProcessing[0].processingMethod[0].cvParam[1] = new CVParam()
             {
                 cvRef = "MS",
-                acession = "MS:1000544",
+                accession = "MS:1000544",
                 name = "Conversion to mzML",
                 value = ""
             };

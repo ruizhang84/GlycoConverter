@@ -92,6 +92,13 @@ namespace SpectrumData.Reader
             return spectrum;
         }
 
+        public TypeOfMSActivation GetActivation(int scanNum)
+        {
+            int pnActivationType = 0;
+            rawConnect.GetActivationTypeForScanNum(scanNum, GetMSnOrder(scanNum), ref pnActivationType);
+            return (TypeOfMSActivation)pnActivationType;
+        }
+
         public void GetScanHeaderInfoForScanNum(int nScanNum,
             ref double dLowMass, ref double dHighMass, ref double dTIC,
             ref double dBasePeakMass, ref double dBasePeakIntensity)

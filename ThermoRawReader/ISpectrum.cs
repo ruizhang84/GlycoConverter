@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace SpectrumData
 {
+    public enum TypeOfMSActivation
+        { CID, MPD, ECD, PQD, ETD, HCD, Any, SA, PTR, NETD, NPTR };
     public interface ISpectrum
     {
         List<IPeak> GetPeaks();

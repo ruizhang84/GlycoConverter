@@ -12,13 +12,13 @@ namespace mzMLWriter.Component
         [XmlAttribute]
         public string cvRef { get; set; }
         [XmlAttribute]
-        public string acession { get; set; }
+        public string accession { get; set; }
         [XmlAttribute]
         public string name { get; set; }
         [XmlAttribute]
         public string unitCvRef { get; set; }
         [XmlAttribute]
-        public string unitAcession { get; set; }
+        public string unitAccession { get; set; }
         [XmlAttribute]
         public string unitName { get; set; }
         [XmlAttribute]

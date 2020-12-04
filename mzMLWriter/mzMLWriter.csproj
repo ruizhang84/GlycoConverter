@@ -64,5 +64,15 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PrecursorIonClassLibrary\PrecursorIonClassLibrary.csproj">
+      <Project>{9d74eb8d-25e4-43ae-a717-7c8afe01b727}</Project>
+      <Name>PrecursorIonClassLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ThermoRawReader\SpectrumDataReader.csproj">
+      <Project>{db0bf4e4-76d6-403c-9d37-bd230961ea43}</Project>
+      <Name>SpectrumDataReader</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
