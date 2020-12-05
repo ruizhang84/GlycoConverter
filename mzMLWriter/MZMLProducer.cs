@@ -17,7 +17,7 @@ namespace mzMLWriter
         protected string softwareVersion = "1.0";
         protected string dataProcessingID = "GlycoConverter_Processing";
 
-        MSmzML Produce(string path)
+        public MSmzML Produce(string path)
         {
             var model = new MSmzML();
 

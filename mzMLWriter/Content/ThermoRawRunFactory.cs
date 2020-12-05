@@ -17,7 +17,6 @@ namespace mzMLWriter.Content
     {
         private double searchRange = 2;
         private double ms1PrcisionPPM = 5;
-        private int msMaxPeaks = 2000;
 
         private void SetScanHeader(Spectrum spectrum, double dLowMass, double dHighMass, 
             double dTIC, double dBasePeakMass, double dBasePeakIntensity)
@@ -176,14 +175,11 @@ namespace mzMLWriter.Content
                     name = "ms level",
                     value = "1",
                 };
-                // limiting ms1 peaks
-                List<IPeak> ms1Peaks = majorPeaks;
-                if (ms1Peaks.Count > msMaxPeaks)
-                    ms1Peaks = majorPeaks.OrderBy(p => p.GetIntensity()).Take(msMaxPeaks).OrderBy(p => p.GetMZ()).ToList();
                 spectrum.binaryDataArrayList.binaryDataArray[0].binary =
-                    ms1Peaks.SelectMany(p => BitConverter.GetBytes(p.GetMZ())).ToArray();
+                    majorPeaks.SelectMany(p => BitConverter.GetBytes(p.GetMZ())).ToArray();
                 spectrum.binaryDataArrayList.binaryDataArray[1].binary =
-                    ms1Peaks.SelectMany(p => BitConverter.GetBytes(p.GetIntensity())).ToArray();
+                    majorPeaks.SelectMany(p => BitConverter.GetBytes(p.GetIntensity())).ToArray();
+                spectrum.defaultArrayLength = majorPeaks.Count.ToString();
             }
             else if (reader.GetMSnOrder(scan) == 2)
             {
@@ -220,13 +216,11 @@ namespace mzMLWriter.Content
                 ISpectrum ms2 = reader.GetSpectrum(scan);
                 
                 List<IPeak> ms2Peaks = process.Process(ms2).GetPeaks();
-                if (ms2Peaks.Count > msMaxPeaks)
-                    ms2Peaks = ms2Peaks.OrderBy(p => p.GetIntensity()).Take(msMaxPeaks).
-                        OrderBy(p => p.GetMZ()).ToList();
                 spectrum.binaryDataArrayList.binaryDataArray[0].binary =
                     ms2Peaks.SelectMany(p => BitConverter.GetBytes(p.GetMZ())).ToArray();
                 spectrum.binaryDataArrayList.binaryDataArray[1].binary =
                     ms2Peaks.SelectMany(p => BitConverter.GetBytes(p.GetIntensity())).ToArray();
+                spectrum.defaultArrayLength = ms2Peaks.Count.ToString();
 
                 spectrum.precursorList = new PrecursorList();
                 spectrum.precursorList.count = "1";
@@ -342,7 +336,7 @@ namespace mzMLWriter.Content
             {
                 data.spectrumList.spectrum[i] = spectrumList[i];
                 data.spectrumList.spectrum[i].index = i.ToString();
-                data.spectrumList.spectrum[i].defaultArrayLength = msMaxPeaks.ToString();
+                data.spectrumList.spectrum[i].defaultArrayLength = spectrumList[i].defaultArrayLength;
             }
             data.spectrumList.count = spectrumList.Count.ToString();
             data.spectrumList.defaultDataProcessingRef = defaultDataProcessingRef;
