@@ -192,7 +192,7 @@ namespace mzMLWriter.Content
                 };
 
                 double mz = reader.GetPrecursorMass(scan, reader.GetMSnOrder(scan));
-                if (ms1.GetPeaks()
+                if (ms1 == null || ms1.GetPeaks()
                     .Where(p => p.GetMZ() > mz - searchRange && p.GetMZ() < mz + searchRange)
                     .Count() == 0)
                     return null;
