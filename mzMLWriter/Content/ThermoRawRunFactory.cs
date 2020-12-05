@@ -17,6 +17,7 @@ namespace mzMLWriter.Content
     {
         private double searchRange = 2;
         private double ms1PrcisionPPM = 5;
+        private int msMaxPeaks = 2000;
 
         private void SetScanHeader(Spectrum spectrum, double dLowMass, double dHighMass, 
             double dTIC, double dBasePeakMass, double dBasePeakIntensity)
@@ -83,6 +84,8 @@ namespace mzMLWriter.Content
         {
             binaryDataArrayList.count = "2";
             binaryDataArrayList.binaryDataArray = new BinaryDataArray[2];
+            binaryDataArrayList.binaryDataArray[0] = new BinaryDataArray();
+            binaryDataArrayList.binaryDataArray[1] = new BinaryDataArray();
             binaryDataArrayList.binaryDataArray[0].cvParam = new Component.CVParam[3];
             binaryDataArrayList.binaryDataArray[0].cvParam[0] = new Component.CVParam()
             {
@@ -135,11 +138,11 @@ namespace mzMLWriter.Content
             };
         }
 
-        public Spectrum ReadSpectrum(ThermoRawSpectrumReader reader, int scan, 
+        public Spectrum ReadSpectrum(ref ThermoRawSpectrumReader reader, int scan, 
             AveragineType type, IProcess process,
             ref ISpectrum ms1, ref List<IPeak> majorPeaks, LocalMaximaPicking picking)
         {
-            if (reader.GetMSnOrder(scan) != 1 || reader.GetMSnOrder(scan) != 2)
+            if (reader.GetMSnOrder(scan) != 1 && reader.GetMSnOrder(scan) != 2)
                 return null;
 
             // scan header
@@ -173,10 +176,14 @@ namespace mzMLWriter.Content
                     name = "ms level",
                     value = "1",
                 };
-                spectrum.binaryDataArrayList.binaryDataArray[0].Binary =
-                    majorPeaks.SelectMany(p => BitConverter.GetBytes(p.GetMZ())).ToArray();
-                spectrum.binaryDataArrayList.binaryDataArray[1].Binary =
-                    majorPeaks.SelectMany(p => BitConverter.GetBytes(p.GetIntensity())).ToArray();
+                // limiting ms1 peaks
+                List<IPeak> ms1Peaks = majorPeaks;
+                if (ms1Peaks.Count > msMaxPeaks)
+                    ms1Peaks = majorPeaks.OrderBy(p => p.GetIntensity()).Take(msMaxPeaks).OrderBy(p => p.GetMZ()).ToList();
+                spectrum.binaryDataArrayList.binaryDataArray[0].binary =
+                    ms1Peaks.SelectMany(p => BitConverter.GetBytes(p.GetMZ())).ToArray();
+                spectrum.binaryDataArrayList.binaryDataArray[1].binary =
+                    ms1Peaks.SelectMany(p => BitConverter.GetBytes(p.GetIntensity())).ToArray();
             }
             else if (reader.GetMSnOrder(scan) == 2)
             {
@@ -212,19 +219,26 @@ namespace mzMLWriter.Content
                 // process spectrum
                 ISpectrum ms2 = reader.GetSpectrum(scan);
                 
-                ms2 = process.Process(ms2);
-
-                spectrum.binaryDataArrayList.binaryDataArray[0].Binary =
-                    ms2.GetPeaks().SelectMany(p => BitConverter.GetBytes(p.GetMZ())).ToArray();
-                spectrum.binaryDataArrayList.binaryDataArray[1].Binary =
-                    ms2.GetPeaks().SelectMany(p => BitConverter.GetBytes(p.GetIntensity())).ToArray();
+                List<IPeak> ms2Peaks = process.Process(ms2).GetPeaks();
+                if (ms2Peaks.Count > msMaxPeaks)
+                    ms2Peaks = ms2Peaks.OrderBy(p => p.GetIntensity()).Take(msMaxPeaks).
+                        OrderBy(p => p.GetMZ()).ToList();
+                spectrum.binaryDataArrayList.binaryDataArray[0].binary =
+                    ms2Peaks.SelectMany(p => BitConverter.GetBytes(p.GetMZ())).ToArray();
+                spectrum.binaryDataArrayList.binaryDataArray[1].binary =
+                    ms2Peaks.SelectMany(p => BitConverter.GetBytes(p.GetIntensity())).ToArray();
 
                 spectrum.precursorList = new PrecursorList();
                 spectrum.precursorList.count = "1";
                 spectrum.precursorList.precursor = new Precursor[1];
+                for(int i = 0; i < spectrum.precursorList.precursor.Length; i++)
+                    spectrum.precursorList.precursor[i] = new Precursor();
+
                 spectrum.precursorList.precursor[0].selectedIonList = new SelectedIonList();
                 spectrum.precursorList.precursor[0].selectedIonList.count = "1";
                 spectrum.precursorList.precursor[0].selectedIonList.selectedIon = new SelectedIon[1];
+                for (int i = 0; i < spectrum.precursorList.precursor[0].selectedIonList.selectedIon.Length; i++)
+                    spectrum.precursorList.precursor[0].selectedIonList.selectedIon[i] = new SelectedIon();
                 spectrum.precursorList.precursor[0].selectedIonList.selectedIon[0].cvParam = new Component.CVParam[2];
                 spectrum.precursorList.precursor[0].selectedIonList.selectedIon[0].cvParam[0] = new Component.CVParam()
                 {
@@ -236,7 +250,7 @@ namespace mzMLWriter.Content
                     unitAccession = "MS:1000040",
                     unitName = "m/z"
                 };
-                spectrum.precursorList.precursor[0].selectedIonList.selectedIon[0].cvParam[0] = new Component.CVParam()
+                spectrum.precursorList.precursor[0].selectedIonList.selectedIon[0].cvParam[1] = new Component.CVParam()
                 {
                     cvRef = "MS",
                     accession = "MS:1000041",
@@ -291,13 +305,13 @@ namespace mzMLWriter.Content
             }
 
             spectrum.binaryDataArrayList.binaryDataArray[0].encodedLength =
-                spectrum.binaryDataArrayList.binaryDataArray[0].Binary.Length.ToString();
+                Convert.ToBase64String(spectrum.binaryDataArrayList.binaryDataArray[0].binary).Length.ToString();
             spectrum.binaryDataArrayList.binaryDataArray[1].encodedLength =
-                spectrum.binaryDataArrayList.binaryDataArray[1].Binary.Length.ToString();
+                Convert.ToBase64String(spectrum.binaryDataArrayList.binaryDataArray[1].binary).Length.ToString();
             return spectrum;
         }
 
-        public Run Read(string path, AveragineType type)
+        public Run Read(string path, AveragineType type, string defaultDataProcessingRef)
         {
             Run data = new Run();
 
@@ -314,10 +328,13 @@ namespace mzMLWriter.Content
             List<Spectrum> spectrumList = new List<Spectrum>();
             for (int i = reader.GetFirstScan(); i < reader.GetLastScan(); i++)
             {
-                Spectrum spectrum = ReadSpectrum(reader, i, type, process,
-                    ref ms1, ref majorPeaks, picking);
+                Spectrum spectrum = ReadSpectrum(ref reader, i, type, process,
+                    ref ms1, ref majorPeaks, picking); 
                 if (spectrum != null)
+                {
                     spectrumList.Add(spectrum);
+                }
+                    
             }
 
             data.spectrumList.spectrum = new Spectrum[spectrumList.Count];
@@ -325,9 +342,10 @@ namespace mzMLWriter.Content
             {
                 data.spectrumList.spectrum[i] = spectrumList[i];
                 data.spectrumList.spectrum[i].index = i.ToString();
-                data.spectrumList.spectrum[i].defaultArrayLength = "15";
+                data.spectrumList.spectrum[i].defaultArrayLength = msMaxPeaks.ToString();
             }
             data.spectrumList.count = spectrumList.Count.ToString();
+            data.spectrumList.defaultDataProcessingRef = defaultDataProcessingRef;
 
             return data;
         }

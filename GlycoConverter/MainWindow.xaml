@@ -5,8 +5,47 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GlycoConverter"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="300" Width="750">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Black" Grid.Row="0">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="MS/MS Files" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Button x:Name="MSMSFileNames" Content="Open Raw Files" Click="MSMSFileNames_Click" VerticalAlignment="Center" Padding="5, 1, 5, 1"/>
+                <RadioButton Name="MGF" Content="MGF" Checked="SelectFormat" VerticalAlignment="Center" Margin="10" IsChecked="True"/>
+                <RadioButton Name="MZML" Content="MZML" Checked="SelectFormat" VerticalAlignment="Center" Margin="10" />
+            </StackPanel>
+        </Border>
+        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Black" Grid.Row="1">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Output Directory" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Button x:Name="outputDir" Content="Browser" VerticalAlignment="Center" Click="OutputDir_Click" Padding="5, 1, 5, 1"/>
+                <TextBox x:Name="displayOutput" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" VerticalAlignment="Center" Width="500" Margin="10"/>
+            </StackPanel>
+        </Border>
+        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Black" Grid.Row="2">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="10">
+                <ListBox Name="lbFiles" Height="100" Width="700" MouseDoubleClick="DeselectFiles_Click"/>
+            </StackPanel>
+        </Border>
+        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Black" Grid.Row="3">
+            <ProgressBar HorizontalAlignment="Left" Height="20" Width="700" Margin="10" Minimum="0" Maximum="1000" Name="SearchingStatus"/>
+        </Border>
+        <Border BorderBrush="Black" Grid.Row="4">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton Name="Peptides" Content="Peptides" Checked="SelectTypes" VerticalAlignment="Center" Margin="10" IsChecked="True"/>
+                <RadioButton Name="Glycopeptides" Content="Glycopeptides" Checked="SelectTypes" VerticalAlignment="Center" Margin="10" />
+                <RadioButton Name="Glycan" Content="Glycan" Checked="SelectTypes" VerticalAlignment="Center" Margin="10"/>
+                <RadioButton Name="PermethylatedGlycan" Content="PermethylatedGlycan" Checked="SelectTypes" VerticalAlignment="Center" Margin="10"/>
+                <Button Name="ButtonRun" Content="Run" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" Margin="10" Width="70" Click="Button_Click"/>
+            </StackPanel>
+        </Border>
+
     </Grid>
 </Window>

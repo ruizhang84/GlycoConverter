@@ -15,7 +15,7 @@ namespace mzMLWriter.Content
         public string encodedLength { get; set; }
         [XmlElement]
         public CVParam[] cvParam { get; set; }
-        public byte[] Binary { get; set; }
+        public byte[] binary { get; set; }
     }
     public class BinaryDataArrayList
     {
