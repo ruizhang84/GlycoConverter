@@ -50,6 +50,7 @@
     <Compile Include="Content\Run.cs" />
     <Compile Include="Content\SpectrumList.cs" />
     <Compile Include="Content\ThermoRawRunFactory.cs" />
+    <Compile Include="Content\ThermoRawRunFactoryHelper.cs" />
     <Compile Include="MSmzML.cs" />
     <Compile Include="MZMLProducer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

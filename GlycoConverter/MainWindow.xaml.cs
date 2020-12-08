@@ -29,6 +29,7 @@ namespace GlycoConverter
         private string output = "";
         private AveragineType type = AveragineType.Peptide;
         private int progressCounter;
+        private int readingCounter;
 
         public MainWindow()
         {
@@ -100,22 +101,30 @@ namespace GlycoConverter
             }
 
             ButtonRun.IsEnabled = false;
-            progressCounter = 0;
 
             Counter counter = new Counter();
+            ProgressingCounter readCounter = new ProgressingCounter();
             IConverter converter = null;
             if (MGF.IsChecked == true)
             {
-                converter = new MGFConverter(counter);
+                converter = new MGFConverter(counter, readCounter);
             }
             else if (MZML.IsChecked == true)
             {
-                converter = new MZMLConverter(counter);
+                converter = new MZMLConverter(counter, readCounter);
             }
             
 
             counter.progressChange += SearchProgressChanged;
-            await Task.Run(() => converter.ParallelRun(files, output, type));
+            readCounter.progressChange += ReadingProgressChanged;
+            
+            await Task.Run(() => 
+            {
+                progressCounter = 0;
+                readingCounter = 0;
+                foreach (string path in files)
+                    converter.ParallelRun(path, output, type);
+            });
             ButtonRun.IsEnabled = true;
         }
 
@@ -133,6 +142,23 @@ namespace GlycoConverter
         {
             Interlocked.Increment(ref progressCounter);
             UpdateProgress();
+        }
+
+
+        private void UpdateReadingProgress(int total)
+        {
+            Dispatcher.BeginInvoke(
+                DispatcherPriority.Normal,
+                new ThreadStart(() =>
+                {
+                    ProgressStatus.Value = readingCounter * 1.0 / total * 1000.0;
+                }));
+        }
+
+        private void ReadingProgressChanged(object sender, ProgressingEventArgs e)
+        {
+            Interlocked.Increment(ref readingCounter);
+            UpdateReadingProgress(e.Total);
         }
 
         private void SelectTypes(object sender, RoutedEventArgs e)

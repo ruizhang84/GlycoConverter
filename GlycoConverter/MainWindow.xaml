@@ -5,9 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GlycoConverter"
         mc:Ignorable="d"
-        Title="GlycoConverter" Height="320" Width="770">
+        Title="GlycoConverter" Height="360" Width="770">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -35,9 +36,12 @@
             </StackPanel>
         </Border>
         <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Black" Grid.Row="3">
+            <ProgressBar HorizontalAlignment="Left" Height="20" Width="700" Margin="10" Minimum="0" Maximum="1000" Name="ProgressStatus"/>
+        </Border>
+        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Black" Grid.Row="4">
             <ProgressBar HorizontalAlignment="Left" Height="20" Width="700" Margin="10" Minimum="0" Maximum="1000" Name="SearchingStatus"/>
         </Border>
-        <Border BorderBrush="Black" Grid.Row="4">
+        <Border BorderBrush="Black" Grid.Row="5">
             <StackPanel Orientation="Horizontal">
                 <RadioButton Name="Peptides" Content="Peptides" Checked="SelectTypes" VerticalAlignment="Center" Margin="10" IsChecked="True"/>
                 <RadioButton Name="Glycopeptides" Content="Glycopeptides" Checked="SelectTypes" VerticalAlignment="Center" Margin="10" />

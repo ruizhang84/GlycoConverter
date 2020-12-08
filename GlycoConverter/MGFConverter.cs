@@ -17,13 +17,16 @@ namespace GlycoConverter
     public class MGFConverter : IConverter
     {
         private Counter progress;
+        private ProgressingCounter readingProgress;
         private double searchRange = 2;
         private double ms1PrcisionPPM = 5;
-        private int maxDegreeOfParallelism = 9;
+        //private int maxDegreeOfParallelism = 9;
+        private readonly object resultLock = new object();
 
-        public MGFConverter(Counter progress)
+        public MGFConverter(Counter progress, ProgressingCounter readingProgress)
         {
             this.progress = progress;
+            this.readingProgress = readingProgress;
         }
 
         public void WriteMGF(StreamWriter writer, string title,
@@ -44,71 +47,104 @@ namespace GlycoConverter
             writer.Flush();
         }
 
-        public void ParallelRun(List<string> fileNames, string outputDir, AveragineType type)
+        public void ParallelRun(string path, string outputDir, AveragineType type)
         {
-            Parallel.ForEach(fileNames,
-                new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism },
-                (path) =>
+            string file = Path.GetFileNameWithoutExtension(path) + ".mgf";
+            string output = Path.Combine(outputDir, file);
+
+            ISpectrumReader reader = new ThermoRawSpectrumReader();
+            LocalMaximaPicking picking = new LocalMaximaPicking(ms1PrcisionPPM);
+            reader.Init(path);
+
+            Dictionary<int, List<int>> scanGroup = new Dictionary<int, List<int>>();
+            int current = -1;
+            int start = reader.GetFirstScan();
+            int end = reader.GetLastScan();
+            for (int i = start; i < end; i++)
+            {
+                if (reader.GetMSnOrder(i) == 1)
                 {
-                    string file = Path.GetFileNameWithoutExtension(path) + ".mgf";
-                    string output = Path.Combine(outputDir, file);
+                    current = i;
+                    scanGroup[i] = new List<int>();
+                }
+                else if (reader.GetMSnOrder(i) == 2)
+                {
+                    scanGroup[current].Add(i);
+                }
+            }
 
-                    ISpectrumReader reader = new ThermoRawSpectrumReader();
-                    LocalMaximaPicking picking = new LocalMaximaPicking(ms1PrcisionPPM);
-                    reader.Init(path);
-                    using (FileStream ostrm = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
+
+            List<MS2Info> ms2Infos = new List<MS2Info>();
+            Parallel.ForEach(scanGroup, (scanPair) => 
+            {
+                if (scanPair.Value.Count > 0)
+                {
+                    ISpectrum ms1 = reader.GetSpectrum(scanPair.Key);
+                    List<IPeak> majorPeaks = picking.Process(ms1.GetPeaks());
+                    foreach (int i in scanPair.Value)
                     {
-                        using (StreamWriter writer = new StreamWriter(ostrm))
+                        double mz = reader.GetPrecursorMass(i, reader.GetMSnOrder(i));
+                        if (ms1.GetPeaks()
+                            .Where(p => p.GetMZ() > mz - searchRange && p.GetMZ() < mz + searchRange)
+                            .Count() == 0)
+                            continue;
+
+                        Patterson charger = new Patterson();
+                        int charge = charger.Charge(ms1.GetPeaks(), mz - searchRange, mz + searchRange);
+
+                        // find evelope cluster
+                        EnvelopeProcess envelope = new EnvelopeProcess();
+                        var cluster = envelope.Cluster(majorPeaks, mz, charge);
+                        if (cluster.Count == 0)
+                            continue;
+
+                        // find monopeak
+                        Averagine averagine = new Averagine(AveragineType.GlycoPeptide);
+                        BrainCSharp braincs = new BrainCSharp();
+                        MonoisotopicSearcher searcher = new MonoisotopicSearcher(averagine, braincs);
+                        MonoisotopicScore result = searcher.Search(mz, charge, cluster);
+                        double precursorMZ = result.GetMZ();
+
+                        // write mgf
+                        ISpectrum ms2 = reader.GetSpectrum(i);
+                        IProcess process = new LocalNeighborPicking();
+                        ms2 = process.Process(ms2);
+
+                        MS2Info ms2Info = new MS2Info();
+                        ms2Info.PrecursorMZ = result.GetMZ();
+                        ms2Info.PrecursorCharge = charge;
+                        ms2Info.Scan = ms2.GetScanNum();
+                        ms2Info.Retention = ms2.GetRetention();
+                        ms2Info.Peaks = ms2.GetPeaks();
+                        lock (resultLock)
                         {
-                            ISpectrum ms1 = null;
-                            List<IPeak> majorPeaks = new List<IPeak>();
-                            int f = reader.GetLastScan();
-
-                            for (int i = reader.GetFirstScan(); i < reader.GetLastScan(); i++)
-                            {
-                                if (reader.GetMSnOrder(i) < 2)
-                                {
-                                    ms1 = reader.GetSpectrum(i);
-                                    majorPeaks = picking.Process(ms1.GetPeaks());
-                                }
-                                else
-                                {
-                                    double mz = reader.GetPrecursorMass(i, reader.GetMSnOrder(i));
-                                    if (ms1.GetPeaks()
-                                        .Where(p => p.GetMZ() > mz - searchRange && p.GetMZ() < mz + searchRange)
-                                        .Count() == 0)
-                                        continue;
-
-                                    Patterson charger = new Patterson();
-                                    int charge = charger.Charge(ms1.GetPeaks(), mz - searchRange, mz + searchRange);
-
-                                    // find evelope cluster
-                                    EnvelopeProcess envelope = new EnvelopeProcess();
-                                    var cluster = envelope.Cluster(majorPeaks, mz, charge);
-                                    if (cluster.Count == 0)
-                                        continue;
-
-                                    // find monopeak
-                                    Averagine averagine = new Averagine(type);
-                                    BrainCSharp braincs = new BrainCSharp();
-                                    MonoisotopicSearcher searcher = new MonoisotopicSearcher(averagine, braincs);
-                                    MonoisotopicScore result = searcher.Search(mz, charge, cluster);
-
-                                    // write mgf
-                                    ISpectrum ms2 = reader.GetSpectrum(i);
-                                    IProcess process = new LocalNeighborPicking();
-                                    ms2 = process.Process(ms2);
-
-                                    WriteMGF(writer, path, result.GetMZ(), charge, ms2.GetScanNum(), ms2.GetRetention(),
-                                        ms2.GetPeaks());
-                                    writer.Flush();
-                                }
-                            }
+                            ms2Infos.Add(ms2Info);
                         }
+
                     }
-                    // update progress
-                    progress.Add();
-                });
+                }
+                    readingProgress.Add(scanGroup.Count);
+            });
+
+
+            ms2Infos = ms2Infos.OrderBy(m => m.Scan).ToList();
+            using (FileStream ostrm = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                using (StreamWriter writer = new StreamWriter(ostrm))
+                {
+                    foreach(MS2Info ms2 in ms2Infos)
+                    {
+                        WriteMGF(writer, path, ms2.PrecursorMZ, ms2.PrecursorCharge,
+                            ms2.Scan, ms2.Retention, ms2.Peaks);
+                        writer.Flush();
+                    }
+                }
+            }
+
+            // update progress
+            progress.Add();
+
+            
         }
     }
 }

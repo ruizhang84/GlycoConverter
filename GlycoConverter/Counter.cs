@@ -6,13 +6,39 @@ using System.Threading.Tasks;
 
 namespace GlycoConverter
 {
+
+    public class ProgressingEventArgs : EventArgs
+    {
+        public int Total { get; set; }
+    }
+
+    public class ProgressingCounter
+    {
+        public event EventHandler<ProgressingEventArgs> progressChange;
+
+        protected virtual void OnProgressChanged(ProgressingEventArgs e)
+        {
+            EventHandler<ProgressingEventArgs> handler = progressChange;
+            handler?.Invoke(this, e);
+        }
+
+        public void Add(int total)
+        {
+            ProgressingEventArgs e = new ProgressingEventArgs
+            {
+                Total = total
+            };
+            OnProgressChanged(e);
+        }
+    }
+
     public class Counter
     {
-        public event EventHandler progressChange;
+        public event EventHandler<EventArgs> progressChange;
 
         protected virtual void OnProgressChanged(EventArgs e)
         {
-            EventHandler handler = progressChange;
+            EventHandler<EventArgs> handler = progressChange;
             handler?.Invoke(this, e);
         }
 

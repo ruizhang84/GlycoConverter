@@ -9,6 +9,6 @@ namespace GlycoConverter
 {
     public interface IConverter
     {
-       void ParallelRun(List<string> fileNames, string outputDir, AveragineType type);
+       void ParallelRun(string path, string outputDir, AveragineType type);
     }
 }

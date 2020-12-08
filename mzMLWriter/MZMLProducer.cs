@@ -17,7 +17,7 @@ namespace mzMLWriter
         protected string softwareVersion = "1.0";
         protected string dataProcessingID = "GlycoConverter_Processing";
 
-        public MSmzML Produce(string path)
+        public MSmzML Produce(string path, ProgressUpdate updater)
         {
             var model = new MSmzML();
 
@@ -137,7 +137,7 @@ namespace mzMLWriter
             // spectrum data
             ThermoRawRunFactory factory = new ThermoRawRunFactory();
             model.run = factory.Read(path, PrecursorIonClassLibrary.Averagine.AveragineType.GlycoPeptide,
-                model.dataProcessingList.dataProcessing[0].id);
+                model.dataProcessingList.dataProcessing[0].id, updater);
             model.run.id = Guid.NewGuid().ToString();
             model.run.defaultInstrumentConfigurationRef = instrumentConfigurationID;
             return model;
