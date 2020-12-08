@@ -14,8 +14,7 @@ namespace mzMLWriter.Content
 {
     public class ThermoRawRunFactoryHelper
     {
-        static double searchRange = 2;
-        static double ms1PrcisionPPM = 5;
+        static readonly double searchRange = 2;
 
         public static void SetScanHeader(Spectrum spectrum, double dLowMass, double dHighMass,
            double dTIC, double dBasePeakMass, double dBasePeakIntensity)
@@ -184,8 +183,10 @@ namespace mzMLWriter.Content
            int scan, LocalMaximaPicking picking, ref ISpectrum ms1, ref List<IPeak> majorPeaks)
         {
             // scan header
-            Spectrum spectrum = new Spectrum();
-            spectrum.id = "scan=" + scan.ToString();
+            Spectrum spectrum = new Spectrum
+            {
+                id = "scan=" + scan.ToString()
+            };
 
             double dLowMass = 0;
             double dHighMass = 0;
@@ -228,8 +229,10 @@ namespace mzMLWriter.Content
             ISpectrum ms1, List<IPeak> majorPeaks)
         {
             // scan header
-            Spectrum spectrum = new Spectrum();
-            spectrum.id = "scan=" + scan.ToString();
+            Spectrum spectrum = new Spectrum
+            {
+                id = "scan=" + scan.ToString()
+            };
 
             double dLowMass = 0;
             double dHighMass = 0;
@@ -284,15 +287,19 @@ namespace mzMLWriter.Content
                 ms2Peaks.SelectMany(p => BitConverter.GetBytes(p.GetIntensity())).ToArray();
             spectrum.defaultArrayLength = ms2Peaks.Count.ToString();
 
-            spectrum.precursorList = new PrecursorList();
-            spectrum.precursorList.count = "1";
-            spectrum.precursorList.precursor = new Precursor[1];
+            spectrum.precursorList = new PrecursorList
+            {
+                count = "1",
+                precursor = new Precursor[1]
+            };
             for (int i = 0; i < spectrum.precursorList.precursor.Length; i++)
                 spectrum.precursorList.precursor[i] = new Precursor();
 
-            spectrum.precursorList.precursor[0].selectedIonList = new SelectedIonList();
-            spectrum.precursorList.precursor[0].selectedIonList.count = "1";
-            spectrum.precursorList.precursor[0].selectedIonList.selectedIon = new SelectedIon[1];
+            spectrum.precursorList.precursor[0].selectedIonList = new SelectedIonList
+            {
+                count = "1",
+                selectedIon = new SelectedIon[1]
+            };
             for (int i = 0; i < spectrum.precursorList.precursor[0].selectedIonList.selectedIon.Length; i++)
                 spectrum.precursorList.precursor[0].selectedIonList.selectedIon[i] = new SelectedIon();
             spectrum.precursorList.precursor[0].selectedIonList.selectedIon[0].cvParam = new Component.CVParam[2];
@@ -313,8 +320,10 @@ namespace mzMLWriter.Content
                 name = "charge state",
                 value = charge.ToString()
             };
-            spectrum.precursorList.precursor[0].activation = new Activation();
-            spectrum.precursorList.precursor[0].activation.cvParam = new Component.CVParam[1];
+            spectrum.precursorList.precursor[0].activation = new Activation
+            {
+                cvParam = new Component.CVParam[1]
+            };
             spectrum.precursorList.precursor[0].activation.cvParam[0] = 
                 ActivationCVParam(reader.GetActivation(scan));
 
