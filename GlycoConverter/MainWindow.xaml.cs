@@ -113,14 +113,12 @@ namespace GlycoConverter
             {
                 converter = new MZMLConverter(counter, readCounter);
             }
-            
 
             counter.progressChange += SearchProgressChanged;
             readCounter.progressChange += ReadingProgressChanged;
             
             await Task.Run(() => 
             {
-                progressCounter = 0;
                 readingCounter = 0;
                 foreach (string path in files)
                     converter.ParallelRun(path, output, type);
