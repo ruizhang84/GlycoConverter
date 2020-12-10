@@ -29,7 +29,7 @@ namespace GlycoConverter
             string output = Path.Combine(outputDir, file);
 
             MZMLProducer mZMLProducer = new MZMLProducer();
-            var model = mZMLProducer.Produce(path, progressingCounter.Add);
+            var model = mZMLProducer.Produce(path, progressingCounter.Add, type);
 
             var serializer = new XmlSerializer(model.GetType());
             var encoding = Encoding.GetEncoding("ISO-8859-1");

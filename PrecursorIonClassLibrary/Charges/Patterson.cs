@@ -7,9 +7,12 @@ using System.Text;
 namespace PrecursorIonClassLibrary.Charges
 {
     // patterson routine
-    public class Patterson
+    public class Patterson : ICharger
     {
-        private double GetIntensity(double target, double[] mz, double[] f)
+        protected readonly int maxCharge = 10;
+        protected readonly double precison = 0.005;
+
+        protected double GetIntensity(double target, double[] mz, double[] f)
         {
             if (target < mz[0] || target > mz[mz.Length -1])
                 return 0;
@@ -33,7 +36,7 @@ namespace PrecursorIonClassLibrary.Charges
             return Interpolation.Linear(target, mz[start], f[start], mz[end], f[end]);
         }
 
-        private double RountineFunc(double delta, 
+        protected double RountineFunc(double delta, 
             List<IPeak> peaks, double lower, double upper, double precise = 0.005)
         {
             double sum = 0.0;
@@ -55,9 +58,7 @@ namespace PrecursorIonClassLibrary.Charges
             return sum;
         }
 
-
-        public int Charge(List<IPeak> peaks, 
-            double lower, double upper, int maxCharge=10, double precise = 0.005)
+        public virtual int Charge(List<IPeak> peaks, double lower, double upper)
         {
             // default to charge 2
             int charge = 2;

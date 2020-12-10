@@ -84,13 +84,20 @@ namespace GlycoConverter
                     foreach (int i in scanPair.Value)
                     {
                         double mz = reader.GetPrecursorMass(i, reader.GetMSnOrder(i));
-                        if (ms1.GetPeaks()
+                        int numPeaks = ms1.GetPeaks()
                             .Where(p => p.GetMZ() > mz - searchRange && p.GetMZ() < mz + searchRange)
-                            .Count() == 0)
+                            .Count();
+                        if (numPeaks == 0)
                             continue;
 
-                        Patterson charger = new Patterson();
+                        ICharger charger = new Patterson();
                         int charge = charger.Charge(ms1.GetPeaks(), mz - searchRange, mz + searchRange);
+                        if (charge > 5 && numPeaks > 1)
+                        {
+                            charger = new Fourier();
+                            charge = charger.Charge(ms1.GetPeaks(), mz - searchRange, mz + searchRange);
+                        }
+
 
                         // find evelope cluster
                         EnvelopeProcess envelope = new EnvelopeProcess();

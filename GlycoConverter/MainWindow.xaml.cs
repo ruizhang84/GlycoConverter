@@ -119,9 +119,12 @@ namespace GlycoConverter
             
             await Task.Run(() => 
             {
-                readingCounter = 0;
+                
                 foreach (string path in files)
+                {
+                    readingCounter = 0;
                     converter.ParallelRun(path, output, type);
+                }   
             });
             ButtonRun.IsEnabled = true;
         }
