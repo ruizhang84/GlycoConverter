@@ -256,7 +256,7 @@ namespace mzMLWriter.Content
                 value = "2",
             };
 
-            double mz = reader.GetPrecursorMass(i, reader.GetMSnOrder(i));
+            double mz = reader.GetPrecursorMass(scan, reader.GetMSnOrder(scan));
             int numPeaks = ms1.GetPeaks()
                 .Where(p => p.GetMZ() > mz - searchRange && p.GetMZ() < mz + searchRange)
                 .Count();
