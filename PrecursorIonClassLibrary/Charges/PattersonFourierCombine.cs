@@ -8,6 +8,9 @@ namespace PrecursorIonClassLibrary.Charges
 {
     public class PattersonFourierCombine : Patterson, ICharger
     {
+        AirPLS airPLS = new AirPLS();
+        protected readonly double precison = 0.005;
+
         public override int Charge(List<IPeak> peaks, double lower, double upper)
         {
             // default to charge 2
@@ -48,7 +51,16 @@ namespace PrecursorIonClassLibrary.Charges
             List<double> Y = selected.Select(p => p.GetIntensity()).ToList();
 
             // baseline corrects
-            // assume none.
+            double[,] yArray = new double[1, Y.Count];
+            for (int i = 0; i < Y.Count; i++)
+            {
+                yArray[0, i] = Y[i];
+            }
+            double[,] z = airPLS.Correction(yArray);
+            for (int i = 0; i < Y.Count; i++)
+            {
+                Y[i] = z[0, i];
+            }
 
             // linearized space by cubic spline
             List<double> x = new List<double>();
@@ -73,7 +85,7 @@ namespace PrecursorIonClassLibrary.Charges
             {
                 fourier[i] = magnitue[i];
             }
-
+             
             // combine
             double best = 0;
             foreach(int i in fourier.Keys)

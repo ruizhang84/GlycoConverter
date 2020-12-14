@@ -2,7 +2,9 @@
 using PrecursorIonClassLibrary.Brain;
 using PrecursorIonClassLibrary.Charges;
 using PrecursorIonClassLibrary.Process;
+using PrecursorIonClassLibrary.Process.PeakPicking.CWT;
 using PrecursorIonClassLibrary.Process.PeakPicking.Neighbor;
+using PrecursorIonClassLibrary.Process.Refinement;
 using SpectrumData;
 using SpectrumData.Reader;
 using System;
@@ -18,7 +20,7 @@ namespace GlycoConverter
     {
         private Counter progress;
         private ProgressingCounter readingProgress;
-        private double searchRange = 2;
+        private double searchRange = 1;
         private double ms1PrcisionPPM = 5;
         //private int maxDegreeOfParallelism = 9;
         private readonly object resultLock = new object();
@@ -114,8 +116,8 @@ namespace GlycoConverter
 
                         // write mgf
                         ISpectrum ms2 = reader.GetSpectrum(i);
-                        IProcess process = new LocalNeighborPicking();
-                        ms2 = process.Process(ms2);
+                        IProcess processer = new WeightedAveraging(new LocalNeighborPicking());
+                        ms2 = processer.Process(ms2);
 
                         MS2Info ms2Info = new MS2Info();
                         ms2Info.PrecursorMZ = result.GetMZ();
@@ -142,7 +144,7 @@ namespace GlycoConverter
                     foreach(MS2Info ms2 in ms2Infos)
                     {
                         WriteMGF(writer, path, ms2.PrecursorMZ, ms2.PrecursorCharge,
-                            ms2.Scan, ms2.Retention, ms2.Peaks);
+                            ms2.Scan, ms2.Retention * 60, ms2.Peaks);
                         writer.Flush();
                     }
                 }

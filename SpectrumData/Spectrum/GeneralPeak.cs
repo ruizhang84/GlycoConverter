@@ -40,10 +40,5 @@ namespace SpectrumData.Spectrum
         {
             return GetMZ().CompareTo(other.GetMZ());
         }
-
-        public double setMZ(double mz)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

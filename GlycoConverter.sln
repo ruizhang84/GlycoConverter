@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mzMLWriter", "mzMLWriter\mz
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XMLUnitTest", "XMLUnitTest\XMLUnitTest.csproj", "{7DF502BD-2EC7-4B57-A89D-333B9AE1738D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpectrumDataReader", "ThermoRawReader\SpectrumDataReader.csproj", "{DB0BF4E4-76D6-403C-9D37-BD230961EA43}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpectrumDataReader", "SpectrumData\SpectrumDataReader.csproj", "{DB0BF4E4-76D6-403C-9D37-BD230961EA43}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrecursorIonClassLibrary", "PrecursorIonClassLibrary\PrecursorIonClassLibrary.csproj", "{9D74EB8D-25E4-43AE-A717-7C8AFE01B727}"
 EndProject

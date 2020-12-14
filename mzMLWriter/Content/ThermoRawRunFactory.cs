@@ -3,6 +3,7 @@ using PrecursorIonClassLibrary.Brain;
 using PrecursorIonClassLibrary.Charges;
 using PrecursorIonClassLibrary.Process;
 using PrecursorIonClassLibrary.Process.PeakPicking.Neighbor;
+using PrecursorIonClassLibrary.Process.Refinement;
 using SpectrumData;
 using SpectrumData.Reader;
 using System;
@@ -28,7 +29,7 @@ namespace mzMLWriter.Content
             // init reader
             ThermoRawSpectrumReader reader = new ThermoRawSpectrumReader();
             LocalMaximaPicking picking = new LocalMaximaPicking(ms1PrcisionPPM);
-            IProcess process = new LocalNeighborPicking();
+            IProcess process = new WeightedAveraging(new LocalNeighborPicking());
             reader.Init(path);
 
             data.spectrumList = new SpectrumList();

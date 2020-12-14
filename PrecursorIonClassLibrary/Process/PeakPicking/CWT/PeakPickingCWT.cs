@@ -12,7 +12,7 @@ namespace PrecursorIonClassLibrary.Process.PeakPicking.CWT
         private double maxScale;
         private double steps;
         private RidgeLineFinder finder;
-        private double lowerBound = 200;
+        private double lowerBound = 100;
         private double upperBound = 2000;
         private double precison = 1.0;
 

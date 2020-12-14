@@ -11,6 +11,7 @@ namespace PrecursorIonClassLibrary.Charges
     {
         protected readonly int maxCharge = 10;
         protected readonly double precison = 0.005;
+        protected AirPLS airPLS = new AirPLS();
 
         public int Charge(List<IPeak> peaks, double lower, double upper)
         {
@@ -22,8 +23,17 @@ namespace PrecursorIonClassLibrary.Charges
             List<double> X = selected.Select(p => p.GetMZ()).ToList();
             List<double> Y = selected.Select(p => p.GetIntensity()).ToList();
 
-            // baseline corrects
-            // assume none.
+            // baseline corrects by airPLS
+            double[,] yArray = new double[1, Y.Count];
+            for(int i = 0; i < Y.Count; i++)
+            {
+                yArray[0, i] = Y[i];
+            }
+            double[,] z = airPLS.Correction(yArray);
+            for(int i = 0; i < Y.Count; i++)
+            {
+                Y[i] = z[0, i];
+            }
 
             // linearized space by cubic spline
             List<double> x = new List<double>();

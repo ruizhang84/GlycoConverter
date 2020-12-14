@@ -10,7 +10,6 @@ namespace PrecursorIonClassLibrary.Charges
     public class Patterson : ICharger
     {
         protected readonly int maxCharge = 10;
-        protected readonly double precison = 0.005;
 
         protected double GetIntensity(double target, double[] mz, double[] f)
         {
