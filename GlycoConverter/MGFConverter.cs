@@ -32,7 +32,9 @@ namespace GlycoConverter
         }
 
         public void WriteMGF(StreamWriter writer, string title,
-                    double mz, int charge, int scan, double retention, List<IPeak> majorPeaks)
+                    double mz, int charge, int scan, double retention, 
+                    TypeOfMSActivation type,
+                    List<IPeak> majorPeaks)
         {
             writer.WriteLine("BEGIN IONS");
             writer.WriteLine("TITLE=" + title);
@@ -40,6 +42,22 @@ namespace GlycoConverter
             writer.WriteLine("RTINSECONDS=" + retention.ToString());
             writer.WriteLine("CHARGE=" + charge.ToString() + "+");
             writer.WriteLine("PEPMASS=" + mz.ToString());
+            switch(type)
+            {
+                case TypeOfMSActivation.CID:
+                    writer.WriteLine("INSTRUMENT=CID");
+                    break;
+                case TypeOfMSActivation.ETD:
+                    writer.WriteLine("INSTRUMENT=ETD");
+                    break;
+                case TypeOfMSActivation.HCD:
+                    writer.WriteLine("INSTRUMENT=HCD");
+                    break;
+                default:
+                    writer.WriteLine("INSTRUMENT=Default");
+                    break;
+            }
+
             foreach (IPeak pk in majorPeaks)
             {
                 writer.WriteLine(pk.GetMZ().ToString() + " " + pk.GetIntensity().ToString());
@@ -54,7 +72,7 @@ namespace GlycoConverter
             string file = Path.GetFileNameWithoutExtension(path) + ".mgf";
             string output = Path.Combine(outputDir, file);
 
-            ISpectrumReader reader = new ThermoRawSpectrumReader();
+            ThermoRawSpectrumReader reader = new ThermoRawSpectrumReader();
             LocalMaximaPicking picking = new LocalMaximaPicking(ms1PrcisionPPM);
             reader.Init(path);
 
@@ -144,7 +162,7 @@ namespace GlycoConverter
                     foreach(MS2Info ms2 in ms2Infos)
                     {
                         WriteMGF(writer, path, ms2.PrecursorMZ, ms2.PrecursorCharge,
-                            ms2.Scan, ms2.Retention * 60, ms2.Peaks);
+                            ms2.Scan, ms2.Retention * 60, reader.GetActivation(ms2.Scan), ms2.Peaks);
                         writer.Flush();
                     }
                 }
