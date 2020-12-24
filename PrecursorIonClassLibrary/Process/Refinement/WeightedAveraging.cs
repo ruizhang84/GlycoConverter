@@ -12,6 +12,8 @@ namespace PrecursorIonClassLibrary.Process.Refinement
         public IProcess peakPicking;
         protected double percent = 0.3;
         readonly double precision = 0.1;
+        readonly int mzRound = 5;
+        readonly int peakRound = 3;
 
         public WeightedAveraging(IProcess peakPicking, double percent = 0.3)
         {
@@ -55,7 +57,9 @@ namespace PrecursorIonClassLibrary.Process.Refinement
         {
             double weighted = peaks.Select(p => p.GetMZ() * p.GetIntensity()).Sum();
             double intensity_sums = peaks.Select(p => p.GetIntensity()).Sum();
-            return new GeneralPeak(weighted / intensity_sums, target.GetIntensity());
+            return new GeneralPeak(
+                Math.Round(weighted / intensity_sums, mzRound), 
+                Math.Round(target.GetIntensity(), peakRound));
         }
 
 

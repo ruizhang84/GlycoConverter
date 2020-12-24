@@ -161,7 +161,7 @@ namespace GlycoConverter
                 {
                     foreach(MS2Info ms2 in ms2Infos)
                     {
-                        WriteMGF(writer, path, ms2.PrecursorMZ, ms2.PrecursorCharge,
+                        WriteMGF(writer, path + ",SCANS=" + ms2.Scan.ToString() + ",PRECURSOR=" + ms2.PrecursorMZ, ms2.PrecursorMZ, ms2.PrecursorCharge,
                             ms2.Scan, ms2.Retention * 60, reader.GetActivation(ms2.Scan), ms2.Peaks);
                         writer.Flush();
                     }
