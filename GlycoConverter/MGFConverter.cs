@@ -126,7 +126,7 @@ namespace GlycoConverter
                             continue;
 
                         // find monopeak
-                        Averagine averagine = new Averagine(AveragineType.GlycoPeptide);
+                        Averagine averagine = new Averagine(type);
                         BrainCSharp braincs = new BrainCSharp();
                         MonoisotopicSearcher searcher = new MonoisotopicSearcher(averagine, braincs);
                         MonoisotopicScore result = searcher.Search(mz, charge, cluster);
