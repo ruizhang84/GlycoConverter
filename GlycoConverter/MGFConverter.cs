@@ -93,6 +93,7 @@ namespace GlycoConverter
                 }
             }
 
+            var test = scanGroup[15154];
 
             List<MS2Info> ms2Infos = new List<MS2Info>();
             Parallel.ForEach(scanGroup, (scanPair) => 

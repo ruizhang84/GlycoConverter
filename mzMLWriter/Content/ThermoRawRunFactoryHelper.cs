@@ -14,7 +14,7 @@ namespace mzMLWriter.Content
 {
     public class ThermoRawRunFactoryHelper
     {
-        static readonly double searchRange = 2;
+        static readonly double searchRange = 1;
 
         public static void SetScanHeader(Spectrum spectrum, double dLowMass, double dHighMass,
            double dTIC, double dBasePeakMass, double dBasePeakIntensity)
