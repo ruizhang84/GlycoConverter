@@ -90,9 +90,10 @@ namespace mzMLWriter.Content
             spectrumList = spectrumList.OrderBy(x => int.Parse(x.id.Substring(5))).ToList();
             for(int i = 0; i < spectrumList.Count; i++)
             {
+                int scan = int.Parse(spectrumList[i].id.Substring(5));
                 data.spectrumList.spectrum[i] = spectrumList[i];
-                data.spectrumList.spectrum[i].index = i.ToString();
-                data.spectrumList.spectrum[i].defaultArrayLength = spectrumList[i].defaultArrayLength;
+                data.spectrumList.spectrum[i].index = (scan-1).ToString();
+            data.spectrumList.spectrum[i].defaultArrayLength = spectrumList[i].defaultArrayLength;
             }
             data.spectrumList.count = spectrumList.Count.ToString();
             data.spectrumList.defaultDataProcessingRef = defaultDataProcessingRef;
