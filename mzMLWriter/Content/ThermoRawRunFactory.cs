@@ -91,7 +91,7 @@ namespace mzMLWriter.Content
             for(int i = 0; i < spectrumList.Count; i++)
             {
                 data.spectrumList.spectrum[i] = spectrumList[i];
-                data.spectrumList.spectrum[i].index = spectrumList[i].id.Substring(5);
+                data.spectrumList.spectrum[i].index = i.ToString();
                 data.spectrumList.spectrum[i].defaultArrayLength = spectrumList[i].defaultArrayLength;
             }
             data.spectrumList.count = spectrumList.Count.ToString();
