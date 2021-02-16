@@ -4,6 +4,7 @@ using PrecursorIonClassLibrary.Charges;
 using PrecursorIonClassLibrary.Process;
 using SpectrumData;
 using SpectrumData.Reader;
+using SpectrumData.Spectrum;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -203,6 +204,24 @@ namespace mzMLWriter.Content
             SetBinaryDataArrayHeader(spectrum.binaryDataArrayList);
 
             ms1 = reader.GetSpectrum(scan);
+            // insert pseudo peaks for large gaps
+            List<IPeak> peaks = new List<IPeak>();
+            double precision = 0.02;
+            double last = ms1.GetPeaks().First().GetMZ();
+            foreach (IPeak peak in ms1.GetPeaks())
+            {
+                if (peak.GetMZ() - last > precision)
+                {
+                    while (peak.GetMZ() - last > precision)
+                    {
+                        last += precision;
+                        peaks.Add(new GeneralPeak(last, 0));
+                    }
+                }
+                peaks.Add(peak);
+                last = peak.GetMZ();
+            }
+            ms1.SetPeaks(peaks);
             majorPeaks = picking.Process(ms1.GetPeaks());
             spectrum.cvParam[0] = new Component.CVParam()
             {

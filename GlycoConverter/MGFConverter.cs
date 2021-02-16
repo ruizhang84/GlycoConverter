@@ -7,6 +7,7 @@ using PrecursorIonClassLibrary.Process.PeakPicking.Neighbor;
 using PrecursorIonClassLibrary.Process.Refinement;
 using SpectrumData;
 using SpectrumData.Reader;
+using SpectrumData.Spectrum;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,8 +21,8 @@ namespace GlycoConverter
     {
         private Counter progress;
         private ProgressingCounter readingProgress;
-        private double searchRange = 1;
-        private double ms1PrcisionPPM = 5;
+        private readonly double searchRange = 1;
+        private readonly double ms1PrcisionPPM = 5;
         //private int maxDegreeOfParallelism = 9;
         private readonly object resultLock = new object();
 
@@ -99,7 +100,25 @@ namespace GlycoConverter
                 if (scanPair.Value.Count > 0)
                 {
                     ISpectrum ms1 = reader.GetSpectrum(scanPair.Key);
-                    List<IPeak> majorPeaks = picking.Process(ms1.GetPeaks());
+                    // insert pseudo peaks for large gaps
+                    List<IPeak> peaks = new List<IPeak>();
+                    double precision = 0.02;
+                    double last = ms1.GetPeaks().First().GetMZ();
+                    foreach (IPeak peak in ms1.GetPeaks())
+                    {
+                        if (peak.GetMZ() - last > precision)
+                        {
+                            while (peak.GetMZ() - last > precision)
+                            {
+                                last += precision;
+                                peaks.Add(new GeneralPeak(last, 0));
+                            }
+                        }
+                        peaks.Add(peak);
+                        last = peak.GetMZ();
+                    }
+
+                    List<IPeak> majorPeaks = picking.Process(peaks);
                     foreach (int i in scanPair.Value)
                     {
                         double mz = reader.GetPrecursorMass(i, reader.GetMSnOrder(i));
@@ -110,11 +129,11 @@ namespace GlycoConverter
                             continue;
 
                         ICharger charger = new Patterson();
-                        int charge = charger.Charge(ms1.GetPeaks(), mz - searchRange, mz + searchRange);
+                        int charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
                         if (charge > 5 && numPeaks > 1)
                         {
                             charger = new Fourier();
-                            charge = charger.Charge(ms1.GetPeaks(), mz - searchRange, mz + searchRange);
+                            charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
                         }
 
 
@@ -136,12 +155,14 @@ namespace GlycoConverter
                         IProcess processer = new WeightedAveraging(new LocalNeighborPicking());
                         ms2 = processer.Process(ms2);
 
-                        MS2Info ms2Info = new MS2Info();
-                        ms2Info.PrecursorMZ = result.GetMZ();
-                        ms2Info.PrecursorCharge = charge;
-                        ms2Info.Scan = ms2.GetScanNum();
-                        ms2Info.Retention = ms2.GetRetention();
-                        ms2Info.Peaks = ms2.GetPeaks();
+                        MS2Info ms2Info = new MS2Info
+                        {
+                            PrecursorMZ = result.GetMZ(),
+                            PrecursorCharge = charge,
+                            Scan = ms2.GetScanNum(),
+                            Retention = ms2.GetRetention(),
+                            Peaks = ms2.GetPeaks()
+                        };
                         lock (resultLock)
                         {
                             ms2Infos.Add(ms2Info);

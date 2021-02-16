@@ -14,7 +14,7 @@ namespace XMLUnitTest
     public class UnitTestCharge
     {
         [Test]
-        public void test1()
+        public void Test1()
         {
             string path = @"C:\Users\Rui Zhang\Downloads\ZC_20171218_C16_R1.raw";
 
@@ -67,16 +67,10 @@ namespace XMLUnitTest
 
                         Console.WriteLine(charge.ToString() + " "
                             + charger2.Charge(ms1.GetPeaks(), mz - searchRange, mz + searchRange).ToString());
-
-
-                        break;
                     }
-
-                    break;
                 }
-
             }
         }
-
     }
+
 }
