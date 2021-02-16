@@ -16,6 +16,51 @@ namespace mzMLWriter.Content
     public class ThermoRawRunFactoryHelper
     {
         static readonly double searchRange = 2;
+        static List<IPeak> FilterPeaks(List<IPeak> peaks, double target, double range)
+        {
+            if (peaks.Count == 0)
+            {
+                return peaks;
+            }
+
+            int start = 0;
+            int end = peaks.Count - 1;
+            int middle = 0;
+            if (peaks[start].GetMZ() > target - range)
+            {
+                middle = start;
+            }
+            else
+            {
+                while (start + 1 < end)
+                {
+                    middle = (end - start) / 2 + start;
+                    double mz = peaks[middle].GetMZ() + range;
+                    if (mz == target)
+                    {
+                        break;
+                    }
+                    else if (mz < target)
+                    {
+                        start = middle;
+                    }
+                    else
+                    {
+                        end = middle - 1;
+                    }
+                }
+            }
+
+            List<IPeak> res = new List<IPeak>();
+            while (middle < peaks.Count)
+            {
+                if (peaks[middle].GetMZ() > target + range)
+                    break;
+                res.Add(peaks[middle++]);
+            }
+            return res;
+        }
+
 
         public static void SetScanHeader(Spectrum spectrum, double dLowMass, double dHighMass,
            double dTIC, double dBasePeakMass, double dBasePeakIntensity)
@@ -258,26 +303,21 @@ namespace mzMLWriter.Content
             };
 
             double mz = reader.GetPrecursorMass(scan, reader.GetMSnOrder(scan));
-            int numPeaks = ms1.GetPeaks()
-                .Where(p => p.GetMZ() > mz - searchRange && p.GetMZ() < mz + searchRange)
-                .Count();
-            if (numPeaks == 0)
+            List<IPeak> ms1Peaks = FilterPeaks(ms1.GetPeaks(), mz, searchRange);
+
+            if (ms1Peaks.Count() == 0)
                 return null;
 
             // insert pseudo peaks for large gaps
             List<IPeak> peaks = new List<IPeak>();
             double precision = 0.02;
-            double last = ms1.GetPeaks().First().GetMZ();
-            foreach (IPeak peak in ms1.GetPeaks()
-                           .Where(p => p.GetMZ() > mz - searchRange && p.GetMZ() < mz + searchRange))
+            double last = ms1Peaks.First().GetMZ();
+            foreach (IPeak peak in ms1Peaks)
             {
                 if (peak.GetMZ() - last > precision)
                 {
-                    while (peak.GetMZ() - last > precision)
-                    {
-                        last += precision;
-                        peaks.Add(new GeneralPeak(last, 0));
-                    }
+                    peaks.Add(new GeneralPeak(last + precision / 2, 0));
+                    peaks.Add(new GeneralPeak(peak.GetMZ() - precision / 2, 0));
                 }
                 peaks.Add(peak);
                 last = peak.GetMZ();
@@ -286,7 +326,7 @@ namespace mzMLWriter.Content
 
             ICharger charger = new Patterson();
             int charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
-            if (charge > 5 && numPeaks > 1)
+            if (charge > 5 && ms1Peaks.Count > 1)
             {
                 charger = new Fourier();
                 charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
