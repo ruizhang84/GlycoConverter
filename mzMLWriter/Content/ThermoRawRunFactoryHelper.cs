@@ -15,7 +15,7 @@ namespace mzMLWriter.Content
 {
     public class ThermoRawRunFactoryHelper
     {
-        static readonly double searchRange = 1;
+        static readonly double searchRange = 2;
 
         public static void SetScanHeader(Spectrum spectrum, double dLowMass, double dHighMass,
            double dTIC, double dBasePeakMass, double dBasePeakIntensity)
@@ -181,7 +181,7 @@ namespace mzMLWriter.Content
         }
 
         public static Spectrum GetMS1Spectrum(ref ThermoRawSpectrumReader reader,
-           int scan, LocalMaximaPicking picking, ref ISpectrum ms1, ref List<IPeak> majorPeaks)
+           int scan, ref ISpectrum ms1)
         {
             // scan header
             Spectrum spectrum = new Spectrum
@@ -204,25 +204,7 @@ namespace mzMLWriter.Content
             SetBinaryDataArrayHeader(spectrum.binaryDataArrayList);
 
             ms1 = reader.GetSpectrum(scan);
-            // insert pseudo peaks for large gaps
-            List<IPeak> peaks = new List<IPeak>();
-            double precision = 0.02;
-            double last = ms1.GetPeaks().First().GetMZ();
-            foreach (IPeak peak in ms1.GetPeaks())
-            {
-                if (peak.GetMZ() - last > precision)
-                {
-                    while (peak.GetMZ() - last > precision)
-                    {
-                        last += precision;
-                        peaks.Add(new GeneralPeak(last, 0));
-                    }
-                }
-                peaks.Add(peak);
-                last = peak.GetMZ();
-            }
-            ms1.SetPeaks(peaks);
-            majorPeaks = picking.Process(ms1.GetPeaks());
+            //majorPeaks = picking.Process(ms1.GetPeaks());
             spectrum.cvParam[0] = new Component.CVParam()
             {
                 cvRef = "MS",
@@ -231,10 +213,10 @@ namespace mzMLWriter.Content
                 value = "1",
             };
             spectrum.binaryDataArrayList.binaryDataArray[0].binary =
-                majorPeaks.SelectMany(p => BitConverter.GetBytes(p.GetMZ())).ToArray();
+                ms1.GetPeaks().SelectMany(p => BitConverter.GetBytes(p.GetMZ())).ToArray();
             spectrum.binaryDataArrayList.binaryDataArray[1].binary =
-                majorPeaks.SelectMany(p => BitConverter.GetBytes(p.GetIntensity())).ToArray();
-            spectrum.defaultArrayLength = majorPeaks.Count.ToString();
+                ms1.GetPeaks().SelectMany(p => BitConverter.GetBytes(p.GetIntensity())).ToArray();
+            spectrum.defaultArrayLength = ms1.GetPeaks().Count.ToString();
 
             spectrum.binaryDataArrayList.binaryDataArray[0].encodedLength =
                Convert.ToBase64String(spectrum.binaryDataArrayList.binaryDataArray[0].binary).Length.ToString();
@@ -244,8 +226,8 @@ namespace mzMLWriter.Content
         }
 
         public static Spectrum GetMS2Spectrum(ref ThermoRawSpectrumReader reader,
-            int scan, AveragineType type, IProcess process, 
-            ISpectrum ms1, List<IPeak> majorPeaks)
+            int scan, AveragineType type, LocalMaximaPicking picking, IProcess process, 
+            ISpectrum ms1)
         {
             // scan header
             Spectrum spectrum = new Spectrum
@@ -282,12 +264,32 @@ namespace mzMLWriter.Content
             if (numPeaks == 0)
                 return null;
 
+            // insert pseudo peaks for large gaps
+            List<IPeak> peaks = new List<IPeak>();
+            double precision = 0.02;
+            double last = ms1.GetPeaks().First().GetMZ();
+            foreach (IPeak peak in ms1.GetPeaks()
+                           .Where(p => p.GetMZ() > mz - searchRange && p.GetMZ() < mz + searchRange))
+            {
+                if (peak.GetMZ() - last > precision)
+                {
+                    while (peak.GetMZ() - last > precision)
+                    {
+                        last += precision;
+                        peaks.Add(new GeneralPeak(last, 0));
+                    }
+                }
+                peaks.Add(peak);
+                last = peak.GetMZ();
+            }
+            List<IPeak> majorPeaks = picking.Process(peaks);
+
             ICharger charger = new Patterson();
-            int charge = charger.Charge(ms1.GetPeaks(), mz - searchRange, mz + searchRange);
+            int charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
             if (charge > 5 && numPeaks > 1)
             {
                 charger = new Fourier();
-                charge = charger.Charge(ms1.GetPeaks(), mz - searchRange, mz + searchRange);
+                charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
             }
 
             // find evelope cluster

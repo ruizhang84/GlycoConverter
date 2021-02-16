@@ -59,7 +59,7 @@ namespace mzMLWriter.Content
                     ISpectrum ms1 = null;
                     List<IPeak> majorPeaks = new List<IPeak>();
                     Spectrum ms1Spectrum =
-                        ThermoRawRunFactoryHelper.GetMS1Spectrum(ref reader, parentScan, picking, ref ms1, ref majorPeaks);
+                        ThermoRawRunFactoryHelper.GetMS1Spectrum(ref reader, parentScan, ref ms1);
                     if (ms1Spectrum != null)
                     {
                         lock (resultLock)
@@ -71,7 +71,7 @@ namespace mzMLWriter.Content
                     foreach (int scan in scanPair.Value)
                     {
                         Spectrum ms2Spectrum =
-                            ThermoRawRunFactoryHelper.GetMS2Spectrum(ref reader, scan, type, process, ms1, majorPeaks);
+                            ThermoRawRunFactoryHelper.GetMS2Spectrum(ref reader, scan, type, picking, process, ms1);
                         if(ms2Spectrum != null)
                         {
                             lock (resultLock)

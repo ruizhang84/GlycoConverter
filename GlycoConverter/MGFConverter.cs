@@ -21,7 +21,7 @@ namespace GlycoConverter
     {
         private Counter progress;
         private ProgressingCounter readingProgress;
-        private readonly double searchRange = 1;
+        private readonly double searchRange = 2;
         private readonly double ms1PrcisionPPM = 5;
         //private int maxDegreeOfParallelism = 9;
         private readonly object resultLock = new object();
@@ -100,25 +100,6 @@ namespace GlycoConverter
                 if (scanPair.Value.Count > 0)
                 {
                     ISpectrum ms1 = reader.GetSpectrum(scanPair.Key);
-                    // insert pseudo peaks for large gaps
-                    List<IPeak> peaks = new List<IPeak>();
-                    double precision = 0.02;
-                    double last = ms1.GetPeaks().First().GetMZ();
-                    foreach (IPeak peak in ms1.GetPeaks())
-                    {
-                        if (peak.GetMZ() - last > precision)
-                        {
-                            while (peak.GetMZ() - last > precision)
-                            {
-                                last += precision;
-                                peaks.Add(new GeneralPeak(last, 0));
-                            }
-                        }
-                        peaks.Add(peak);
-                        last = peak.GetMZ();
-                    }
-
-                    List<IPeak> majorPeaks = picking.Process(peaks);
                     foreach (int i in scanPair.Value)
                     {
                         double mz = reader.GetPrecursorMass(i, reader.GetMSnOrder(i));
@@ -128,6 +109,26 @@ namespace GlycoConverter
                         if (numPeaks == 0)
                             continue;
 
+                        // insert pseudo peaks for large gaps
+                        List<IPeak> peaks = new List<IPeak>();
+                        double precision = 0.02;
+                        double last = ms1.GetPeaks().First().GetMZ();
+                        foreach (IPeak peak in ms1.GetPeaks()
+                            .Where(p => p.GetMZ() > mz - searchRange && p.GetMZ() < mz + searchRange))
+                        {
+                            if (peak.GetMZ() - last > precision)
+                            {
+                                while (peak.GetMZ() - last > precision)
+                                {
+                                    last += precision;
+                                    peaks.Add(new GeneralPeak(last, 0));
+                                }
+                            }
+                            peaks.Add(peak);
+                            last = peak.GetMZ();
+                        }
+
+                        List<IPeak> majorPeaks = picking.Process(peaks);
                         ICharger charger = new Patterson();
                         int charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
                         if (charge > 5 && numPeaks > 1)
