@@ -64,7 +64,7 @@ namespace XMLUnitTest
         [Test]
         public void Test1()
         {
-            string path = @"D:\Raw\ZC_20171218_H95_R1.raw";
+            string path = @"D:\Raw\ZC_20171218_C16_R1.raw";
 
             ISpectrumReader reader = new ThermoRawSpectrumReader();
             LocalMaximaPicking picking = new LocalMaximaPicking(10);
@@ -87,9 +87,9 @@ namespace XMLUnitTest
                 }
             }
 
-            double searchRange = 2 ;
+            double searchRange = 1;
 
-            int scan_num = 812;
+            int scan_num = 4447;
             if (scanMap.ContainsKey(scan_num))
             {
                 int paranet_scan = scanMap[scan_num];
@@ -118,11 +118,11 @@ namespace XMLUnitTest
 
                 List<IPeak> majorPeaks = picking.Process(peaks);
 
-                Console.WriteLine("mz,intensity");
-                foreach (IPeak pk in peaks)
-                {
-                    Console.WriteLine(pk.GetMZ().ToString() + "," + pk.GetIntensity().ToString());
-                }
+                //Console.WriteLine("mz,intensity");
+                //foreach (IPeak pk in peaks)
+                //{
+                //    Console.WriteLine(pk.GetMZ().ToString() + "," + pk.GetIntensity().ToString());
+                //}
 
                 Fourier charger = new Fourier();
                 int charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);

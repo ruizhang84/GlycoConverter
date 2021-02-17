@@ -21,7 +21,7 @@ namespace GlycoConverter
     {
         private Counter progress;
         private ProgressingCounter readingProgress;
-        private readonly double searchRange = 2;
+        private readonly double searchRange = 1;
         private readonly double ms1PrcisionPPM = 5;
         //private int maxDegreeOfParallelism = 9;
         private readonly object resultLock = new object();

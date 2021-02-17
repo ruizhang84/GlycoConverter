@@ -15,7 +15,7 @@ namespace mzMLWriter.Content
 {
     public class ThermoRawRunFactoryHelper
     {
-        static readonly double searchRange = 2;
+        static readonly double searchRange = 1;
         static List<IPeak> FilterPeaks(List<IPeak> peaks, double target, double range)
         {
             if (peaks.Count == 0)
