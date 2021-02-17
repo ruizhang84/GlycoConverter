@@ -31,7 +31,7 @@ namespace GlycoConverter
         private AveragineType type = AveragineType.Peptide;
         private ChargerType charger = ChargerType.Patterson;
         private int progressCounter;
-        private int readingCounter;
+        private long readingCounter;
 
         public MainWindow()
         {
@@ -155,7 +155,7 @@ namespace GlycoConverter
                 DispatcherPriority.Normal,
                 new ThreadStart(() =>
                 {
-                    ProgressStatus.Value = readingCounter * 1.0 / total * 1000.0;
+                    ProgressStatus.Value = Interlocked.Read(ref readingCounter) * 1.0 / total * 1000.0;
                 }));
         }
 

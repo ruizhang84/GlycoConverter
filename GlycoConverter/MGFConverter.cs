@@ -151,7 +151,7 @@ namespace GlycoConverter
                         List<IPeak> ms1Peaks = FilterPeaks(ms1.GetPeaks(), mz, searchRange);
 
                         if (ms1Peaks.Count() == 0)
-                            return;
+                            continue;
 
                         // insert pseudo peaks for large gap
                         List<IPeak> peaks = new List<IPeak>();
@@ -209,12 +209,10 @@ namespace GlycoConverter
                         {
                             ms2Infos.Add(ms2Info);
                         }
-
                     }
                 }
                 readingProgress.Add(scanGroup.Count);
             });
-
 
             ms2Infos = ms2Infos.OrderBy(m => m.Scan).ToList();
             using (FileStream ostrm = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
