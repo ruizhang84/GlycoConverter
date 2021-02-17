@@ -64,7 +64,7 @@ namespace XMLUnitTest
         [Test]
         public void Test1()
         {
-            string path = @"D:\Raw\ZC_20171218_C16_R1.raw";
+            string path = @"D:\Raw\ZC_20171218_N14_R2.raw";
 
             ISpectrumReader reader = new ThermoRawSpectrumReader();
             LocalMaximaPicking picking = new LocalMaximaPicking(10);
@@ -89,7 +89,7 @@ namespace XMLUnitTest
 
             double searchRange = 1;
 
-            int scan_num = 4447;
+            int scan_num = 6223;
             if (scanMap.ContainsKey(scan_num))
             {
                 int paranet_scan = scanMap[scan_num];
@@ -128,8 +128,11 @@ namespace XMLUnitTest
                 int charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
                 Patterson charger2 = new Patterson();
 
+                PattersonFourierCombine charger3 = new PattersonFourierCombine();
+
                 Console.WriteLine(charge.ToString() + " "
-                    + charger2.Charge(peaks, mz - searchRange, mz + searchRange).ToString());
+                    + charger2.Charge(peaks, mz - searchRange, mz + searchRange).ToString() + " "
+                    + charger3.Charge(peaks, mz - searchRange, mz + searchRange).ToString());
 
             }
         }

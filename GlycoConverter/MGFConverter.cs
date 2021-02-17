@@ -113,7 +113,7 @@ namespace GlycoConverter
             writer.Flush();
         }
 
-        public void ParallelRun(string path, string outputDir, AveragineType type)
+        public void ParallelRun(string path, string outputDir, AveragineType type, ChargerType chargerType)
         {
             string file = Path.GetFileNameWithoutExtension(path) + ".mgf";
             string output = Path.Combine(outputDir, file);
@@ -169,13 +169,15 @@ namespace GlycoConverter
                         }
                         List<IPeak> majorPeaks = picking.Process(peaks);
                         ICharger charger = new Patterson();
-                        int charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
-                        if (charge > 5 && ms1Peaks.Count > 1)
+                        if (chargerType == ChargerType.Fourier)
                         {
                             charger = new Fourier();
-                            charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
                         }
-
+                        else if (chargerType == ChargerType.Combined)
+                        {
+                            charger = new PattersonFourierCombine();
+                        }                     
+                        int charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
 
                         // find evelope cluster
                         EnvelopeProcess envelope = new EnvelopeProcess();
@@ -210,7 +212,7 @@ namespace GlycoConverter
 
                     }
                 }
-                    readingProgress.Add(scanGroup.Count);
+                readingProgress.Add(scanGroup.Count);
             });
 
 

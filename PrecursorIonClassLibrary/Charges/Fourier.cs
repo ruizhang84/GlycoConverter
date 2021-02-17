@@ -17,6 +17,8 @@ namespace PrecursorIonClassLibrary.Charges
         {
             // default to charge 2
             int charge = 2;
+            if (peaks.Count < 2)
+                return charge;
             
             // take points from user-selected area
             var selected = peaks.Where(p => p.GetMZ() >= lower && p.GetMZ() <= upper);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using PrecursorIonClassLibrary.Averagine;
+using PrecursorIonClassLibrary.Charges;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,6 +29,7 @@ namespace GlycoConverter
         private List<string> files = new List<string>();
         private string output = "";
         private AveragineType type = AveragineType.Peptide;
+        private ChargerType charger = ChargerType.Patterson;
         private int progressCounter;
         private int readingCounter;
 
@@ -123,7 +125,8 @@ namespace GlycoConverter
                 foreach (string path in files)
                 {
                     readingCounter = 0;
-                    converter.ParallelRun(path, output, type);
+                    UpdateReadingProgress(100);
+                    converter.ParallelRun(path, output, type, charger);
                 }   
             });
             ButtonRun.IsEnabled = true;
@@ -179,6 +182,22 @@ namespace GlycoConverter
             else if (PermethylatedGlycan.IsChecked == true)
             {
                 type = AveragineType.PermethylatedGlycan;
+            }
+        }
+
+        private void SelectCharger(object sender, RoutedEventArgs e)
+        {
+            if (Patterson.IsChecked == true)
+            {
+                charger = ChargerType.Patterson;
+            }
+            else if (Fourier.IsChecked == true)
+            {
+                charger = ChargerType.Fourier;
+            }
+            else if (Combined.IsChecked == true)
+            {
+                charger = ChargerType.Combined;
             }
         }
     }

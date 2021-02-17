@@ -271,7 +271,7 @@ namespace mzMLWriter.Content
         }
 
         public static Spectrum GetMS2Spectrum(ref ThermoRawSpectrumReader reader,
-            int scan, AveragineType type, LocalMaximaPicking picking, IProcess process, 
+            int scan, AveragineType type, ChargerType chargerType, LocalMaximaPicking picking, IProcess process, 
             ISpectrum ms1)
         {
             // scan header
@@ -323,14 +323,16 @@ namespace mzMLWriter.Content
                 last = peak.GetMZ();
             }
             List<IPeak> majorPeaks = picking.Process(peaks);
-
             ICharger charger = new Patterson();
-            int charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
-            if (charge > 5 && ms1Peaks.Count > 1)
+            if (chargerType == ChargerType.Fourier)
             {
                 charger = new Fourier();
-                charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
             }
+            else if (chargerType == ChargerType.Combined)
+            {
+                charger = new PattersonFourierCombine();
+            }
+            int charge = charger.Charge(peaks, mz - searchRange, mz + searchRange);
 
             // find evelope cluster
             EnvelopeProcess envelope = new EnvelopeProcess();

@@ -21,7 +21,7 @@ namespace mzMLWriter.Content
         private double ms1PrcisionPPM = 5;
         private readonly object resultLock = new object();
 
-        public Run Read(string path, AveragineType type, string defaultDataProcessingRef, 
+        public Run Read(string path, AveragineType type, ChargerType charger, string defaultDataProcessingRef, 
             ProgressUpdate updater)
         {
             Run data = new Run();
@@ -71,7 +71,7 @@ namespace mzMLWriter.Content
                     foreach (int scan in scanPair.Value)
                     {
                         Spectrum ms2Spectrum =
-                            ThermoRawRunFactoryHelper.GetMS2Spectrum(ref reader, scan, type, picking, process, ms1);
+                            ThermoRawRunFactoryHelper.GetMS2Spectrum(ref reader, scan, type, charger, picking, process, ms1);
                         if(ms2Spectrum != null)
                         {
                             lock (resultLock)

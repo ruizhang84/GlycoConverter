@@ -1,6 +1,7 @@
 ﻿using mzMLWriter.Component;
 using mzMLWriter.Content;
 using PrecursorIonClassLibrary.Averagine;
+using PrecursorIonClassLibrary.Charges;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +11,13 @@ using System.Threading.Tasks;
 
 namespace mzMLWriter
 {
+    public enum ChargerType
+    {
+        Patterson = 0,
+        Fourier = 1,
+        Combined = 2
+    }
+
     public class MZMLProducer
     {
         protected string contactPerson = "Rui Zhang";
@@ -18,7 +26,7 @@ namespace mzMLWriter
         protected string softwareVersion = "1.0";
         protected string dataProcessingID = "GlycoConverter_Processing";
 
-        public MSmzML Produce(string path, ProgressUpdate updater, AveragineType type)
+        public MSmzML Produce(string path, ProgressUpdate updater, AveragineType type, ChargerType charger)
         {
             var model = new MSmzML();
 
@@ -137,7 +145,7 @@ namespace mzMLWriter
 
             // spectrum data
             ThermoRawRunFactory factory = new ThermoRawRunFactory();
-            model.run = factory.Read(path, type,
+            model.run = factory.Read(path, type, charger,
                 model.dataProcessingList.dataProcessing[0].id, updater);
             model.run.id = Guid.NewGuid().ToString();
             model.run.defaultInstrumentConfigurationRef = instrumentConfigurationID;

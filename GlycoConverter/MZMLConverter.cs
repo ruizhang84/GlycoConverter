@@ -1,5 +1,6 @@
 ﻿using mzMLWriter;
 using PrecursorIonClassLibrary.Averagine;
+using PrecursorIonClassLibrary.Charges;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,13 +24,13 @@ namespace GlycoConverter
             this.progressingCounter = progressingCounter;
         }
 
-        public void ParallelRun(string path, string outputDir, AveragineType type)
+        public void ParallelRun(string path, string outputDir, AveragineType type, ChargerType charger)
         {
             string file = Path.GetFileNameWithoutExtension(path) + ".mzML";
             string output = Path.Combine(outputDir, file);
 
             MZMLProducer mZMLProducer = new MZMLProducer();
-            var model = mZMLProducer.Produce(path, progressingCounter.Add, type);
+            var model = mZMLProducer.Produce(path, progressingCounter.Add, type, (mzMLWriter.ChargerType) charger);
 
             var serializer = new XmlSerializer(model.GetType());
             var encoding = Encoding.GetEncoding("ISO-8859-1");
